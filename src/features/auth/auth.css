@@ -1,0 +1,89 @@
+.auth {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-5);
+  padding: var(--space-5);
+  position: relative;
+  overflow: hidden;
+}
+
+.auth__glow {
+  position: absolute;
+  top: -160px; left: 50%;
+  transform: translateX(-50%);
+  width: 420px; height: 420px;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--color-accent) 0%, transparent 68%);
+  opacity: 0.28;
+  filter: blur(48px);
+  pointer-events: none;
+}
+
+.auth__brand {
+  text-align: center;
+  animation: fade-up var(--dur-slow) var(--ease) both;
+  z-index: 1;
+}
+.auth__logo {
+  width: 60px; height: 60px;
+  margin: 0 auto var(--space-3);
+  border-radius: var(--radius-lg);
+  display: grid; place-items: center;
+  color: var(--color-on-accent);
+  background: linear-gradient(135deg, var(--color-accent), var(--color-accent-2));
+  box-shadow: var(--shadow-glow);
+}
+.auth__title { font-size: 30px; letter-spacing: -0.03em; }
+.auth__tagline { color: var(--color-text-muted); font-size: 14px; margin-top: 4px; }
+
+.auth__card {
+  width: 100%;
+  max-width: 380px;
+  padding: var(--space-5);
+  border-radius: var(--radius-lg);
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur)) saturate(160%);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(160%);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--shadow-float);
+  animation: fade-up var(--dur-slow) var(--ease) both;
+  animation-delay: 60ms;
+  z-index: 1;
+}
+
+.auth__tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  padding: 4px;
+  margin-bottom: var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-2);
+}
+.auth__tab {
+  padding: 9px;
+  border-radius: var(--radius-sm);
+  font-size: 13px; font-weight: 700;
+  color: var(--color-text-muted);
+  transition: all var(--dur-fast) var(--ease);
+}
+.auth__tab--on {
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+  box-shadow: var(--shadow-glow);
+}
+
+.auth__error {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-danger);
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  background: var(--color-danger-soft);
+  border: 1px solid var(--color-danger);
+}
+
+.auth__foot { z-index: 1; }

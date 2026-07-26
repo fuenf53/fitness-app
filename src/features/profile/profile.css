@@ -1,0 +1,79 @@
+.profile-head { display: flex; align-items: center; gap: var(--space-3); }
+
+.avatar {
+  width: 54px; height: 54px;
+  border-radius: var(--radius-full);
+  display: grid; place-items: center;
+  font-weight: 800; font-size: 18px;
+  color: var(--color-on-accent);
+  background: linear-gradient(135deg, var(--color-accent), var(--color-accent-2));
+  box-shadow: var(--shadow-glow);
+  flex-shrink: 0;
+}
+
+.stat-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-2);
+}
+
+.weight-chart { height: 220px; position: relative; }
+
+.wlog-row {
+  display: flex; align-items: center; gap: var(--space-3);
+  padding: 10px var(--space-3);
+  background: var(--color-surface-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  font-size: 14px;
+}
+.wlog-row__val { font-weight: 700; }
+
+/* ------------------------------ settings ----------------------------- */
+.setting-row {
+  display: flex; align-items: center; gap: var(--space-3);
+  padding: var(--space-2) 0;
+}
+.setting-row + .setting-row { border-top: 1px solid var(--color-border); padding-top: var(--space-3); }
+.setting-row__label { font-weight: 700; font-size: 14px; }
+
+.theme-toggle {
+  width: 56px; height: 30px;
+  border-radius: var(--radius-full);
+  background: var(--color-surface-2);
+  border: 1px solid var(--color-border);
+  padding: 3px;
+  display: flex;
+  transition: background var(--dur) var(--ease);
+  flex-shrink: 0;
+}
+.theme-toggle__knob {
+  width: 22px; height: 22px;
+  border-radius: var(--radius-full);
+  display: grid; place-items: center;
+  color: var(--color-on-accent);
+  background: linear-gradient(135deg, var(--color-accent), var(--color-accent-2));
+  transition: transform var(--dur) var(--ease);
+}
+.theme-toggle--light .theme-toggle__knob { transform: translateX(26px); }
+
+.seg {
+  display: flex;
+  background: var(--color-surface-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+  padding: 3px;
+  flex-shrink: 0;
+}
+.seg__btn {
+  padding: 6px 14px;
+  border-radius: var(--radius-full);
+  font-size: 13px; font-weight: 700;
+  color: var(--color-text-muted);
+  transition: all var(--dur-fast) var(--ease);
+}
+.seg__btn--on {
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+  box-shadow: var(--shadow-glow);
+}

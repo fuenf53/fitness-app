@@ -1,0 +1,277 @@
+/* ------------------------- pinned search header ------------------------- */
+/* Sits at the top of the scrolling .modal__body; negative margins let it
+   span the body's padding so nothing shows through behind it. */
+.ex-sticky {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  /* Pulled flush to the modal header: the body's 16px top padding would
+     otherwise show as dead space above the search once it is pinned. */
+  margin: 0 calc(var(--space-4) * -1);
+  padding: var(--space-2) var(--space-4) var(--space-3);
+  background: var(--glass-bg-strong);
+  backdrop-filter: blur(var(--glass-blur)) saturate(160%);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(160%);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.ex-bar { display: flex; align-items: center; gap: var(--space-2); }
+
+/* Filters and the view switch collapse to two icons so the default state is
+   a single row. */
+.icon-toggle {
+  position: relative;
+  width: 44px; height: 44px;
+  flex-shrink: 0;
+  display: grid; place-items: center;
+  border-radius: var(--radius-md);
+  background: var(--color-surface-2);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-muted);
+  transition: all var(--dur-fast) var(--ease);
+}
+.icon-toggle:hover { color: var(--color-text); border-color: var(--color-accent); }
+.icon-toggle:active { transform: scale(0.94); }
+.icon-toggle--on {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: var(--color-on-accent);
+  box-shadow: var(--shadow-glow);
+}
+.icon-toggle__dot {
+  position: absolute;
+  top: -5px; right: -5px;
+  min-width: 17px; height: 17px;
+  padding: 0 4px;
+  border-radius: var(--radius-full);
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+  font-size: 10px; font-weight: 800;
+  display: grid; place-items: center;
+  border: 2px solid var(--color-surface);
+}
+
+.ex-filters {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-2);
+  animation: fade-up var(--dur-fast) var(--ease);
+}
+.ex-filter { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.ex-filter:last-of-type { grid-column: 1 / -1; }
+.ex-filter__label {
+  font-size: 10px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.07em;
+  color: var(--color-text-muted);
+}
+.ex-filter .input { padding: 9px 12px; font-size: 13px; }
+.ex-filter .select { padding-right: 30px; }
+
+.ex-filters__reset {
+  grid-column: 1 / -1;
+  padding: 8px;
+  border-radius: var(--radius-sm);
+  font-size: 12px; font-weight: 700;
+  color: var(--color-text-muted);
+  background: var(--color-surface-2);
+  border: 1px solid var(--color-border);
+}
+.ex-filters__reset:hover { color: var(--color-accent-2); border-color: var(--color-accent); }
+
+.ex-search { position: relative; }
+.ex-search .input { padding-left: 42px; padding-right: 38px; }
+.ex-search__icon {
+  position: absolute; left: 14px; top: 50%;
+  transform: translateY(-50%);
+  color: var(--color-text-muted);
+  pointer-events: none;
+}
+.ex-search__clear {
+  position: absolute; right: 10px; top: 50%;
+  transform: translateY(-50%);
+  width: 24px; height: 24px;
+  border-radius: var(--radius-full);
+  display: grid; place-items: center;
+  color: var(--color-text-muted);
+  font-size: 12px;
+}
+.ex-search__clear:hover { background: var(--color-surface-2); color: var(--color-text); }
+
+.seg--sm .seg__btn { padding: 5px 9px; font-size: 12px; flex: 1; white-space: nowrap; }
+.seg--sm .seg__btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+
+.chip-row {
+  display: flex;
+  gap: var(--space-2);
+  overflow-x: auto;
+  padding-bottom: 2px;
+  scrollbar-width: none;
+}
+.chip-row::-webkit-scrollbar { display: none; }
+
+.ex-card {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  background: var(--color-surface-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: border-color var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
+}
+.ex-card:hover { border-color: var(--color-accent); }
+.ex-card:active { transform: scale(0.99); }
+
+.ex-card__media,
+.ex-glyph {
+  width: 46px; height: 46px;
+  border-radius: var(--radius-sm);
+  flex-shrink: 0;
+  object-fit: cover;
+}
+
+.ex-glyph {
+  display: grid;
+  place-items: center;
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--color-on-accent);
+  background: linear-gradient(135deg, var(--color-accent), var(--color-accent-2));
+}
+/* Per-group hue shift so groups read apart at a glance. The accent is green
+   (~142deg), so the spread is kept inside roughly -50..+48 — lime through
+   green to teal — rather than rotating out into blues and purples. */
+.ex-glyph--chest       { filter: none; }
+.ex-glyph--back        { filter: hue-rotate(10deg); }
+.ex-glyph--shoulders   { filter: hue-rotate(20deg); }
+.ex-glyph--hips        { filter: hue-rotate(30deg); }
+.ex-glyph--waist       { filter: hue-rotate(40deg); }
+.ex-glyph--cardio      { filter: hue-rotate(48deg); }
+.ex-glyph--thighs      { filter: hue-rotate(-12deg); }
+.ex-glyph--upper-arms  { filter: hue-rotate(-22deg); }
+.ex-glyph--forearms    { filter: hue-rotate(-32deg); }
+.ex-glyph--calves      { filter: hue-rotate(-42deg); }
+.ex-glyph--neck        { filter: hue-rotate(-50deg); }
+
+.ex-card__name { font-weight: 700; font-size: 14px; }
+.ex-card__meta {
+  display: flex; align-items: center; gap: var(--space-2);
+  margin-top: 3px;
+  font-size: 12px;
+  min-width: 0;
+}
+/* Long target names ("cardiovascular system") must not wrap the row to
+   two lines. */
+.ex-card__meta .badge {
+  max-width: 55%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ex-card__usage,
+.ex-tile__usage {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--color-accent-2);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ------------------------------ grid view ------------------------------ */
+.ex-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: var(--space-2);
+}
+
+.ex-tile {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  padding: var(--space-3) var(--space-2) var(--space-2);
+  background: var(--color-surface-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  text-align: center;
+  transition: border-color var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
+}
+.ex-tile:hover { border-color: var(--color-accent); }
+.ex-tile:active { transform: scale(0.98); }
+
+.ex-tile__name {
+  font-weight: 700;
+  font-size: 12.5px;
+  line-height: 1.25;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  min-height: 2.5em;
+}
+.ex-tile__meta { font-size: 11px; color: var(--color-text-muted); max-width: 100%; }
+.ex-tile__usage { position: absolute; top: 6px; left: 8px; }
+
+.ex-tile__add {
+  position: absolute;
+  top: 6px; right: 6px;
+  width: 26px; height: 26px;
+  display: grid; place-items: center;
+  border-radius: var(--radius-full);
+  background: linear-gradient(135deg, var(--color-accent), var(--color-accent-2));
+  color: var(--color-on-accent);
+  transition: transform var(--dur-fast) var(--ease);
+}
+.ex-tile__add:active { transform: scale(0.9); }
+.ex-tile__add--on { background: var(--color-success); }
+
+.ex-glyph--lg { width: 54px; height: 54px; font-size: 16px; }
+
+.ex-steps {
+  display: flex; flex-direction: column; gap: var(--space-2);
+  padding-left: 18px;
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 14px;
+  line-height: 1.45;
+}
+.ex-steps li { list-style: decimal; }
+.ex-steps li::marker { color: var(--color-accent-2); font-weight: 700; }
+
+.ex-link {
+  display: inline-block;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  background: var(--color-accent-soft);
+  border: 1px solid var(--color-border);
+  text-align: center;
+}
+.ex-link:hover { border-color: var(--color-accent); }
+
+.textarea {
+  resize: vertical;
+  min-height: 92px;
+  line-height: 1.5;
+  font-family: inherit;
+}
+
+/* Custom exercises get a distinct glyph so they stand out in the list. */
+.ex-glyph--custom { background: linear-gradient(135deg, #0ea5e9, #6366f1); }
+
+.ex-more {
+  text-align: center;
+  padding: var(--space-4) 0;
+  font-size: 12px;
+  color: var(--color-text-muted);
+  font-variant-numeric: tabular-nums;
+}

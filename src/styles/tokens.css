@@ -1,0 +1,262 @@
+/* ============================================================
+   tokens.css — THE single source of truth for the design system.
+   Every colour, font, radius, shadow and spacing value lives here.
+   No other file should hard-code a colour.
+
+   Theme: glassmorphism, green accent, dark + bright.
+   ============================================================ */
+
+/* ---------- Dark theme (default) ---------- */
+:root {
+  --color-bg:          #080d0b;
+  --color-bg-grad:
+    radial-gradient(900px 520px at 15% -8%,  rgba(34, 197, 94, 0.18)  0%, transparent 62%),
+    radial-gradient(760px 460px at 88% 6%,   rgba(16, 185, 129, 0.13) 0%, transparent 60%),
+    radial-gradient(700px 620px at 50% 108%, rgba(74, 222, 128, 0.08) 0%, transparent 62%);
+  --color-surface:     #0f1614;
+  --color-surface-2:   #16201c;
+  --color-border:      #24322c;
+
+  --color-accent:      #22c55e;
+  --color-accent-2:    #4ade80;
+  --color-accent-glow: rgba(34, 197, 94, 0.30);
+  --color-accent-soft: rgba(34, 197, 94, 0.14);
+  --color-on-accent:   #04120a;
+
+  --color-text:        #e6efe9;
+  --color-text-muted:  #8ba296;
+
+  --color-success:     #22c55e;
+  --color-success-soft: rgba(34, 197, 94, 0.16);
+  --color-danger:      #f87171;
+  --color-danger-soft: rgba(248, 113, 113, 0.14);
+  --color-warning:     #fbbf24;
+  --color-warning-soft: rgba(251, 191, 36, 0.15);
+  --color-info:        #38bdf8;
+
+  /* --- glass --- */
+  --glass-bg:        rgba(22, 32, 28, 0.55);
+  --glass-bg-strong: rgba(15, 22, 20, 0.88);
+  --glass-blur:      18px;
+  --glass-border:    rgba(255, 255, 255, 0.07);
+  --glass-highlight: rgba(255, 255, 255, 0.10);
+
+  --font-primary: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-full: 999px;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+
+  --shadow-glow:  0 0 22px var(--color-accent-glow);
+  --shadow-card:  0 8px 26px rgba(0, 0, 0, 0.42);
+  --shadow-float: 0 16px 44px rgba(0, 0, 0, 0.55);
+
+  --nav-height: 68px;
+  --header-height: 60px;
+  --content-max: 560px;
+
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --dur-fast: 140ms;
+  --dur: 240ms;
+  --dur-slow: 420ms;
+
+  color-scheme: dark;
+}
+
+/* ---------- Bright theme ---------- */
+[data-theme='light'] {
+  --color-bg:          #f2faf5;
+  --color-bg-grad:
+    radial-gradient(900px 520px at 15% -8%,  rgba(34, 197, 94, 0.20)  0%, transparent 62%),
+    radial-gradient(760px 460px at 88% 6%,   rgba(16, 185, 129, 0.14) 0%, transparent 60%),
+    radial-gradient(700px 620px at 50% 108%, rgba(134, 239, 172, 0.20) 0%, transparent 62%);
+  --color-surface:     #ffffff;
+  --color-surface-2:   #e9f7ef;
+  --color-border:      #c8e9d6;
+
+  --color-accent:      #15a34a;
+  --color-accent-2:    #22c55e;
+  --color-accent-glow: rgba(21, 163, 74, 0.24);
+  --color-accent-soft: rgba(21, 163, 74, 0.10);
+  --color-on-accent:   #ffffff;
+
+  --color-text:        #0e1f16;
+  --color-text-muted:  #587368;
+
+  --color-success:     #15a34a;
+  --color-success-soft: rgba(21, 163, 74, 0.13);
+  --color-danger:      #dc2626;
+  --color-danger-soft: rgba(220, 38, 38, 0.10);
+  --color-warning:     #b45309;
+  --color-warning-soft: rgba(180, 83, 9, 0.12);
+
+  --glass-bg:        rgba(255, 255, 255, 0.62);
+  --glass-bg-strong: rgba(255, 255, 255, 0.92);
+  --glass-blur:      18px;
+  --glass-border:    rgba(255, 255, 255, 0.85);
+  --glass-highlight: rgba(255, 255, 255, 0.95);
+
+  --shadow-card:  0 8px 24px rgba(6, 78, 40, 0.10);
+  --shadow-float: 0 16px 40px rgba(6, 78, 40, 0.16);
+
+  color-scheme: light;
+}
+
+/* ============================================================
+   Glass surface — one place, reused by cards, nav, modals.
+   ============================================================ */
+.glass {
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur)) saturate(160%);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(160%);
+  border: 1px solid var(--glass-border);
+  position: relative;
+}
+
+/* Hairline light catch along the top edge — the thing that reads as "glass". */
+.glass::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding-top: 1px;
+  background: linear-gradient(var(--glass-highlight), transparent 42%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+/* Chrome on Android supports backdrop-filter, but fall back to a solid
+   surface anywhere it is missing so text never sits on a see-through panel. */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .glass { background: var(--color-surface); }
+}
+
+/* ============================================================
+   Base / reset
+   ============================================================ */
+*,
+*::before,
+*::after { box-sizing: border-box; }
+
+html, body, #root { height: 100%; }
+
+body {
+  margin: 0;
+  font-family: var(--font-primary);
+  background-color: var(--color-bg);
+  background-image: var(--color-bg-grad);
+  background-attachment: fixed;
+  color: var(--color-text);
+  -webkit-font-smoothing: antialiased;
+  overscroll-behavior-y: none;
+  transition: background-color var(--dur) var(--ease), color var(--dur) var(--ease);
+}
+
+button, input, select, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; border: none; background: none; }
+a { color: var(--color-accent-2); text-decoration: none; }
+
+h1, h2, h3, h4 { margin: 0; font-weight: 700; letter-spacing: -0.02em; }
+p { margin: 0; }
+ul { margin: 0; padding: 0; list-style: none; }
+
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: var(--radius-full); }
+::-webkit-scrollbar-track { background: transparent; }
+
+:focus-visible {
+  outline: 2px solid var(--color-accent-2);
+  outline-offset: 2px;
+}
+
+/* ============================================================
+   Shared utility classes
+   ============================================================ */
+.app-shell {
+  max-width: var(--content-max);
+  margin: 0 auto;
+  min-height: 100%;
+  padding-bottom: calc(var(--nav-height) + env(safe-area-inset-bottom, 0px) + var(--space-5));
+  position: relative;
+}
+
+.page {
+  padding: var(--space-4) var(--space-4) 0;
+  animation: fade-up var(--dur-slow) var(--ease) both;
+}
+
+.page-title {
+  font-size: 26px;
+  line-height: 1.15;
+}
+
+.page-sub {
+  color: var(--color-text-muted);
+  font-size: 14px;
+  margin-top: var(--space-1);
+}
+
+.section-title {
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: var(--color-text-muted);
+  font-weight: 700;
+  margin: var(--space-5) 0 var(--space-3);
+}
+
+.stack   { display: flex; flex-direction: column; gap: var(--space-3); }
+.stack-2 { display: flex; flex-direction: column; gap: var(--space-2); }
+.row     { display: flex; align-items: center; gap: var(--space-3); }
+.row-between { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); }
+.grow    { flex: 1; min-width: 0; }
+.muted   { color: var(--color-text-muted); }
+.tnum    { font-variant-numeric: tabular-nums; }
+.truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.center-empty {
+  text-align: center;
+  color: var(--color-text-muted);
+  padding: var(--space-6) var(--space-4);
+  font-size: 14px;
+}
+
+/* ============================================================
+   Animations
+   ============================================================ */
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: none; }
+}
+@keyframes fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes slide-up {
+  from { transform: translateY(100%); }
+  to   { transform: none; }
+}
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 0 0 var(--color-accent-glow); }
+  50%      { box-shadow: 0 0 0 10px transparent; }
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
