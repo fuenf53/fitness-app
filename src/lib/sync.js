@@ -112,17 +112,28 @@ export function scheduleFlush() {
   return flushPromise;
 }
 
+/**
+ * Removes one op by id and returns the current (freshly re-read) outbox
+ * afterwards — never blind-writes a stale in-memory copy, because more ops
+ * can be appended by concurrent db.insert()/update() calls while an
+ * `await applyRemote()` below is in flight. Writing back a stale snapshot
+ * would silently erase those concurrently-added entries.
+ */
+function removeOp(id) {
+  writeOutbox(readOutbox().filter((o) => o._id !== id));
+}
+
 async function flush() {
   syncing = true;
   notify();
-  let ops = readOutbox();
-  while (ops.length > 0) {
+  while (true) {
+    const ops = readOutbox();
+    if (ops.length === 0) break;
     const op = ops[0];
     try {
       await applyRemote(op);
       lastError = null;
-      ops = ops.slice(1);
-      writeOutbox(ops);
+      removeOp(op._id);
     } catch (err) {
       if (isNetworkError(err)) {
         lastError = null; // expected while offline, not a real error
@@ -130,8 +141,7 @@ async function flush() {
       }
       console.error('Sync: dropping op after non-network failure', op, err);
       lastError = err.message ?? String(err);
-      ops = ops.slice(1);
-      writeOutbox(ops);
+      removeOp(op._id);
     }
   }
   syncing = false;
