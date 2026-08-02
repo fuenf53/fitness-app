@@ -34,11 +34,25 @@ export default function ExerciseProgress() {
   const unit = weightUnitLabel(units);
   const isBodyweight = history.length > 0 && history.every((h) => h.weightKg == null);
   const current = history[history.length - 1];
+
+  /**
+   * "Best" is the heaviest weight actually lifted — not the session with the
+   * highest *estimated* 1RM. Those can differ: a lighter, higher-rep set can
+   * out-score a genuinely heavier set under the Epley formula (it trends
+   * upward with reps), which would otherwise show the wrong weight as "Best".
+   * Est. 1RM stays a separate figure, the highest estimate across history,
+   * regardless of which set produced it.
+   */
   const best = useMemo(() => {
     if (history.length === 0) return null;
     return history.reduce((a, b) => (
-      (isBodyweight ? b.reps > a.reps : (b.estOneRM ?? 0) > (a.estOneRM ?? 0)) ? b : a
+      (isBodyweight ? b.reps > a.reps : (b.weightKg ?? -1) > (a.weightKg ?? -1)) ? b : a
     ));
+  }, [history, isBodyweight]);
+
+  const bestOneRM = useMemo(() => {
+    if (isBodyweight) return null;
+    return history.reduce((max, h) => (h.estOneRM != null && h.estOneRM > max ? h.estOneRM : max), 0) || null;
   }, [history, isBodyweight]);
 
   if (exercises === null) return <Spinner />;
@@ -87,9 +101,9 @@ export default function ExerciseProgress() {
             <Stat label="Sessions" value={history.length} />
             <Stat
               label="Est. 1RM"
-              value={!isBodyweight && best.estOneRM != null ? round1(kgToDisplay(best.estOneRM, units)) : '—'}
-              unit={!isBodyweight && best.estOneRM != null ? unit : ''}
-              hint={isBodyweight ? 'Bodyweight exercise' : 'Epley formula, from your best set'}
+              value={!isBodyweight && bestOneRM != null ? round1(kgToDisplay(bestOneRM, units)) : '—'}
+              unit={!isBodyweight && bestOneRM != null ? unit : ''}
+              hint={isBodyweight ? 'Bodyweight exercise' : 'Epley formula, highest across your history'}
             />
           </div>
 
