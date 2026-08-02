@@ -7,7 +7,7 @@
  * issue a real JWT; locally, the session is just a stored profile id.
  */
 import { createContext, useContext, useEffect, useMemo, useRef, useState, useCallback } from 'react';
-import { db, TABLES, backend, uid } from './db.js';
+import { db, TABLES, backend, uid, onSyncStatus, pullAll } from './db.js';
 import { supabase, isSupabaseConfigured } from './supabase.js';
 
 const SESSION_KEY = 'fitapp:session';
@@ -42,7 +42,11 @@ export function AppProvider({ children }) {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [toasts, setToasts] = useState([]);
+  const [syncStatus, setSyncStatus] = useState(null);
   const toastId = useRef(0);
+
+  /* ---------------- sync status ---------------- */
+  useEffect(() => onSyncStatus(setSyncStatus), []);
 
   /* ---------------- toasts ---------------- */
   const toast = useCallback((message, tone = 'info') => {
@@ -63,6 +67,7 @@ export function AppProvider({ children }) {
         if (isSupabaseConfigured) {
           const { data } = await supabase.auth.getSession();
           if (data?.session?.user) {
+            await pullAll(); // hydrate the local cache on a fresh device before reading it
             const rows = await db.select(TABLES.profiles, { eq: { id: data.session.user.id } });
             if (rows[0]) setProfile({ ...DEFAULT_PROFILE, ...rows[0] });
           }
@@ -102,6 +107,7 @@ export function AppProvider({ children }) {
         password,
       });
       if (error) throw new Error('Wrong username or password');
+      await pullAll(); // hydrate the local cache on a fresh device before reading it
       const rows = await db.select(TABLES.profiles, { eq: { id: data.user.id } });
       const p = { ...DEFAULT_PROFILE, ...(rows[0] ?? {}) };
       setProfile(p);
@@ -181,14 +187,17 @@ export function AppProvider({ children }) {
 
   const value = useMemo(
     () => ({
-      profile, user: profile, loading, backend,
+      profile, user: profile, loading, backend, syncStatus,
       theme, toggleTheme,
       units: profile?.units ?? 'kg',
       distUnits: profile?.dist_units ?? 'km',
       signIn, signUp, signOut, updateProfile,
       toast, toasts, dismissToast,
     }),
-    [profile, loading, theme, toggleTheme, signIn, signUp, signOut, updateProfile, toast, toasts, dismissToast],
+    [
+      profile, loading, syncStatus, theme, toggleTheme,
+      signIn, signUp, signOut, updateProfile, toast, toasts, dismissToast,
+    ],
   );
 
   return <AppCtx.Provider value={value}>{children}</AppCtx.Provider>;

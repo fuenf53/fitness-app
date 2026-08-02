@@ -5,6 +5,7 @@ import { useApp } from '../../lib/store.jsx';
 import { kgToDisplay, weightUnitLabel, round1, toISODate } from '../../lib/format.js';
 import WeightLog from './WeightLog.jsx';
 import SettingsPanel from './SettingsPanel.jsx';
+import ExerciseProgress from './ExerciseProgress.jsx';
 import RunHistory from '../runs/RunHistory.jsx';
 import { Card, Stat, Spinner, Chip } from '../../components/ui.jsx';
 import './profile.css';
@@ -32,7 +33,7 @@ export default function ProfilePage() {
   const { profile, units } = useApp();
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [tab, setTab] = useState('progress');   // progress | runs | settings
+  const [tab, setTab] = useState('progress');   // progress | exercises | runs | settings
 
   const reload = useCallback(async () => {
     if (!profile?.id) return;
@@ -83,6 +84,7 @@ export default function ProfilePage() {
 
       <div className="chip-row" style={{ marginTop: 'var(--space-4)' }}>
         <Chip active={tab === 'progress'} onClick={() => setTab('progress')}>Progress</Chip>
+        <Chip active={tab === 'exercises'} onClick={() => setTab('exercises')}>Exercises</Chip>
         <Chip active={tab === 'runs'} onClick={() => setTab('runs')}>Runs</Chip>
         <Chip active={tab === 'settings'} onClick={() => setTab('settings')}>Settings</Chip>
       </div>
@@ -121,6 +123,7 @@ export default function ProfilePage() {
         )
       )}
 
+      {tab === 'exercises' && <ExerciseProgress />}
       {tab === 'runs' && <RunHistory />}
       {tab === 'settings' && <SettingsPanel />}
     </div>

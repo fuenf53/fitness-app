@@ -22,6 +22,7 @@ Other scripts:
 | `npm run build` | Production build into `dist/` |
 | `npm run preview` | Serve the production build (port 4173) |
 | `npm run icons` | Regenerate the PWA PNG icons from `scripts/make-icons.mjs` |
+| `npm run apk` | Build + sync + assemble a fresh Android debug APK (see [Android APK](#android-apk-capacitor)) |
 
 There is no account to set up — create a username on first launch and you are in.
 
@@ -32,9 +33,12 @@ src/
 ├── styles/tokens.css              ← every colour, font, radius, spacing (both themes)
 ├── components/                    ← Button, Card, Modal, Toast, Icons, BottomNav
 ├── lib/
-│   ├── db.js                      ← the ONLY data layer; localStorage or Supabase
+│   ├── db.js                      ← the ONLY data layer; always reads/writes the local cache
+│   ├── localCache.js              ← localStorage read/write + id generation
+│   ├── sync.js                    ← outbox queue, push/pull with Supabase, online/offline
+│   ├── tables.js                  ← table name registry (shared by db.js and sync.js)
 │   ├── supabase.js                ← client (lazy-loaded, null when unconfigured)
-│   ├── store.jsx                  ← session, profile, theme, toasts
+│   ├── store.jsx                  ← session, profile, theme, toasts, sync status
 │   ├── healthConnect.js           ← Garmin / Health Connect normalising + import
 │   └── format.js                  ← units, dates, pace, duration
 ├── features/
@@ -44,7 +48,8 @@ src/
 │   ├── exercises/                 ← ExercisePicker, ExerciseCard, exerciseApi, exerciseData
 │   ├── calendar/WorkoutCalendar.jsx
 │   ├── runs/                      ← RunHistory, RunSync
-│   └── profile/                   ← ProfilePage, WeightLog, WeightChart, SettingsPanel
+│   └── profile/                   ← ProfilePage, WeightLog, WeightChart, ExerciseProgress,
+│                                     StrengthChart, SettingsPanel
 └── App.jsx                        ← auth gate + tab routing
 ```
 
@@ -57,10 +62,18 @@ themes.
 The plan named three services that don't work as written. Each is implemented
 behind an interface so swapping in the real thing later touches one file.
 
-### 1. Storage: localStorage by default, Supabase when configured
+### 1. Storage: localStorage by default, offline-first sync when Supabase is configured
 
 No Supabase project is wired up, so the app runs entirely on `localStorage`.
 Every feature works; data just stays on the device it was entered on.
+
+When Supabase **is** configured, `localStorage` doesn't go away — it becomes
+the cache every read and write goes through first, so the app keeps working
+with no connection. `lib/sync.js` pushes writes to Supabase in the background
+through a persisted outbox (retried on reconnect) and pulls remote rows into
+the cache on login and whenever connectivity returns. The Account badge in
+Profile → Settings reflects this live: *Synced*, *Syncing… N*, or
+*Offline · N pending*.
 
 To turn on cross-device sync — **all four steps are required**:
 
@@ -88,7 +101,8 @@ The anon/publishable key is safe to ship in the client bundle — it is designed
 to be public, and RLS is what actually protects the data. That is why step 2
 is not optional.
 
-`lib/db.js` picks the backend at import time; no feature file changes. Username
+`lib/db.js` exposes the same `select`/`insert`/`update`/`remove` regardless of
+backend; feature files never touch `sync.js` or Supabase directly. Username
 login maps to Supabase Auth via a synthetic `username@fitapp.local` address, so
 no email is ever required.
 
@@ -223,6 +237,56 @@ Serve the production build over HTTPS (or `localhost`), open it in Chrome, and
 use "Add to Home Screen". `vite-plugin-pwa` generates the manifest and a service
 worker that precaches the app shell for offline use. For LAN testing over plain
 HTTP, `npm run dev` works but the install prompt needs HTTPS.
+
+## Android APK (Capacitor)
+
+For a real sideloadable `.apk` (not a browser install) the app is wrapped with
+[Capacitor](https://capacitorjs.com) — see `capacitor.config.json` and the
+generated `android/` project. This is for personal installs, not the Play
+Store: the debug build is self-signed and Android will warn about "unknown
+sources" the first time you install it, which is expected.
+
+**One-time toolchain setup** (no root/sudo needed — everything installs into
+your home directory):
+
+1. A JDK **21** (Capacitor 8's Android module requires it specifically —
+   JDK 17 fails with `invalid source release: 21`). This project was set up
+   with Amazon Corretto 21 unpacked to `~/tools/jdk21`.
+2. Android SDK command-line tools unpacked to
+   `~/tools/android-sdk/cmdline-tools/latest`, then:
+   ```bash
+   export JAVA_HOME=~/tools/jdk21 ANDROID_HOME=~/tools/android-sdk
+   "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses --sdk_root="$ANDROID_HOME"
+   "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --sdk_root="$ANDROID_HOME" \
+     "platform-tools" "platforms;android-34" "build-tools;34.0.0"
+   ```
+3. `android/local.properties` pointing at it: `sdk.dir=/home/you/tools/android-sdk`.
+
+**Every rebuild after that** is one command:
+
+```bash
+npm run apk
+```
+
+`scripts/build-apk.sh` runs `npm run build` → `npx cap sync android` →
+`gradlew assembleDebug`, and prints the output path:
+`android/app/build/outputs/apk/debug/app-debug.apk`. The first Gradle run
+downloads the Gradle distribution and all dependencies (~5 minutes); later
+runs are much faster.
+
+**Installing it**: copy the APK to your phone (USB, a cloud drive, `adb push`)
+and open it — Android will prompt to allow installs from whatever app you used
+to open it. Or, with the phone connected over USB and USB debugging enabled:
+
+```bash
+~/tools/android-sdk/platform-tools/adb install -r android/app/build/outputs/apk/debug/app-debug.apk
+```
+
+`android/` is a generated native project (gitignored build output aside, the
+project files themselves are checked in per Capacitor convention). Don't hand-edit
+generated files under `android/app/src/main/assets/` — they're overwritten by
+`cap sync` on every build; app icon/name/id changes go through
+`capacitor.config.json` and `android/app/src/main/res`.
 
 ## Notes
 
