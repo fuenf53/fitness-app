@@ -34,19 +34,22 @@ export default function WorkoutSession({ session, onFinish, onExit }) {
             eq: { template_id: session.template_id },
             order: 'order_index',
           }),
-          db.lastWeights(profile.id).catch(() => ({})),
+          db.lastWeights(profile.id, session.template_id).catch(() => ({})),
         ]);
 
         setPlan(
           rows.map((r) => {
             const target = parseReps(r.reps) ?? { min: 10, max: 10, label: '10' };
+            const fromHistory = last[r.exercise_id]?.weight_kg != null;
             const suggestedWeight = last[r.exercise_id]?.weight_kg ?? r.weight_kg ?? null;
+            const suggestedReps = fromHistory ? last[r.exercise_id]?.reps ?? null : null;
             return {
               exercise_id: r.exercise_id,
               name: r.exercise_name,
               target,
               suggestedWeight,
-              fromHistory: last[r.exercise_id]?.weight_kg != null,
+              suggestedReps,
+              fromHistory,
               sets: Array.from({ length: r.sets }, () => ({
                 done: false,
                 reps: '',            // empty -> placeholder shows the target
@@ -79,7 +82,7 @@ export default function WorkoutSession({ session, onFinish, onExit }) {
    */
   const effectiveWeight = (ex, s) => (s.weight_kg ?? ex.suggestedWeight ?? null);
   const effectiveReps = (ex, s) =>
-    s.reps === '' ? (ex.target.amrap ? 0 : ex.target.min) : (Number(s.reps) || 0);
+    s.reps === '' ? (ex.target.amrap ? 0 : (ex.suggestedReps ?? ex.target.min)) : (Number(s.reps) || 0);
 
   const totals = useMemo(() => {
     let done = 0, total = 0, volume = 0;
@@ -118,7 +121,7 @@ export default function WorkoutSession({ session, onFinish, onExit }) {
       weight_kg: s.weight_kg ?? ex.suggestedWeight ?? null,
       // An all-out set has nothing to pre-fill — the count is the whole point,
       // so jump the cursor there instead of guessing a number.
-      reps: s.reps === '' && !ex.target.amrap ? String(ex.target.min) : s.reps,
+      reps: s.reps === '' && !ex.target.amrap ? String(ex.suggestedReps ?? ex.target.min) : s.reps,
     });
     if (navigator.vibrate) navigator.vibrate(12);
 
@@ -203,6 +206,7 @@ export default function WorkoutSession({ session, onFinish, onExit }) {
                     {ex.suggestedWeight != null && (
                       <> · {ex.fromHistory ? 'last' : 'plan'}{' '}
                         {round1(kgToDisplay(ex.suggestedWeight, units))} {unit}
+                        {ex.fromHistory && ex.suggestedReps != null && <> × {ex.suggestedReps}</>}
                       </>
                     )}
                   </p>
@@ -240,7 +244,7 @@ export default function WorkoutSession({ session, onFinish, onExit }) {
                   <input
                     className={`set-input tnum ${ex.target.amrap ? 'set-input--amrap' : ''}`}
                     type="number" min="0" inputMode="numeric"
-                    placeholder={ex.target.label}
+                    placeholder={!ex.target.amrap && ex.suggestedReps != null ? String(ex.suggestedReps) : ex.target.label}
                     aria-label={`Reps for set ${setIdx + 1} of ${ex.name}`}
                     ref={(el) => { repsRefs.current[`${exIdx}-${setIdx}`] = el; }}
                     value={s.reps}

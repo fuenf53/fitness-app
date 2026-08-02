@@ -75,13 +75,17 @@ export const db = {
   },
 
   /**
-   * Most recently logged weight per exercise, used to pre-fill the weight
-   * placeholder during a session. Scans the user's recent completed sessions
-   * newest-first and keeps the first hit for each exercise.
+   * Most recently logged weight + reps per exercise, used to pre-fill the
+   * weight/reps placeholders during a session. Scoped to sessions of the
+   * same template — the same exercise can appear in different workouts
+   * (e.g. leg curls in both a "Legs" and a "Lower" day) with deliberately
+   * different weight/rep targets, so history from one shouldn't bleed into
+   * the other. Scans the user's recent completed sessions of that template,
+   * newest-first, and keeps the first hit for each exercise.
    */
-  async lastWeights(userId, { limitSessions = 40 } = {}) {
+  async lastWeights(userId, templateId, { limitSessions = 40 } = {}) {
     const sessions = selectFrom(readTable(TABLES.sessions), {
-      eq: { user_id: userId }, order: 'started_at', ascending: false,
+      eq: { user_id: userId, template_id: templateId }, order: 'started_at', ascending: false,
     }).filter((s) => s.completed_at).slice(0, limitSessions);
 
     if (sessions.length === 0) return {};
